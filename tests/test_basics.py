@@ -15,4 +15,5 @@ def test_args():
 
 def test_no_exist():
     with pytest.raises(ValueError):
-        load("tests/rich-script.py", "no_exist")
+        func = load("tests/rich-script.py", "no_exist")
+        func()
