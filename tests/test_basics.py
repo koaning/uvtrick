@@ -1,3 +1,5 @@
+"""When I hacks this bad, I write tests."""
+
 import pytest 
 from uvtrick import load
 
@@ -15,4 +17,10 @@ def test_args():
 
 def test_no_exist():
     with pytest.raises(ValueError):
-        load("tests/rich-script.py", "no_exist")
+        func = load("tests/rich-script.py", "no_exist")
+        func()
+
+def test_no_metadata():
+    with pytest.raises(ValueError):
+        func = load("tests/rich-fail.py", "add")
+        func()

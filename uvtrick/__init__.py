@@ -19,6 +19,8 @@ def uvtrick_(path, func, *args, **kwargs):
 
         if func + "(" not in code:
             raise ValueError(f"Function {func} not found in the file {path}")
+        if "# /// script" not in code:
+            raise ValueError("Script metadata/dependencies not found in the file")
 
         code += f"""if __name__ == "__main__":
     import pickle
@@ -26,7 +28,7 @@ def uvtrick_(path, func, *args, **kwargs):
         pickle.dump({func}({string_args} {string_kwargs}), f)\n"""
 
         Path(temp_dir / "pytemp.py").write_text(code)
-
+        # print(code)
         subprocess.run(f"uv run --quiet {str(temp_dir / 'pytemp.py')}", shell=True, cwd=temp_dir)
 
         temp_pickle_path = os.path.join(temp_dir, "tmp.pickle")
