@@ -1,3 +1,8 @@
+# /// script
+# dependencies = [
+#   "rich",
+# ]
+# ///
 import rich
 
 def hello():
