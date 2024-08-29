@@ -7,5 +7,5 @@ setup(
     install_requires=[
         'uv'
     ],
-    python_requires='>=3.9',
+    python_requires='>=3.8',
 )
