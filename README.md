@@ -1,8 +1,8 @@
-<img src="docs/highlight.png" width="125" height="125" align="right" />
+<img src="img.png" width="125" height="125" align="right" />
 
 ### uvtrick
 
-> A super duper hacky demo of a trick, via `uv` and pickle, to run Python code in another venv ... from Python.
+> A super duper hacky demo of a trick, via `uv` and pickle, to run Python code in another venv ... into this one.
 
 ## Quickstart 
 
