@@ -26,7 +26,5 @@ jobs:
       run: python -m pip install -e .
     - name: Install Pytest
       run: python -m pip install pytest
-    - name: Install spaCy model
-      run: python -m spacy download en_core_web_sm
     - name: Unittest
       run: pytest
