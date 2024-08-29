@@ -1,3 +1,5 @@
+"""When I hacks this bad, I write tests."""
+
 import pytest 
 from uvtrick import load
 
