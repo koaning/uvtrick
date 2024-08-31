@@ -38,15 +38,13 @@ from uvtrick import Env
 
 # For illustration purposes, let's assume that rich is not part of the current environment. 
 # Also note that all the imports happen inside of this function. 
-def uses_rich(a, b):
+def uses_rich():
     from rich import print
     print("hello")
-    return a + b
 
 # This runs the function `uses_rich` in a new environment with the `rich` package installed.
 # Just like the `load` function, the result is returned via pickle. 
-out = Env("rich", python="3.12").run(uses_rich, a=1, b=2)
-assert out == 3
+Env("rich", python="3.12").run(uses_rich, a=1, b=2)
 ```
 
 This approach is pretty useful if you are interested in running the same function in different versions of 
@@ -65,3 +63,11 @@ def uses_rich(a, b):
 for version in (10, 11, 12, 13):
     Env(f"rich=={version}", python="3.12").run(uses_rich, a=1, b=2)
 ```
+
+#### Warning
+
+This is highly experimental work and merely the result of some recreational programming. At the moment everything is turned into
+Python files in temporary directories so that `uv` can easily pick it up. We use pickle to communicate results back, but the function
+inputs currently only work for integers and floats ... because these can be copied directly in plain text files. 
+
+We are thinking about ways to do this more generally with pickles. All in due (recreational) time!
