@@ -26,9 +26,10 @@ def test_no_metadata():
         func()
 
 def test_env_works():
-    def uses_rich():
+    def uses_rich(a, b):
         from rich import print
 
         print("hello")
+        return a + b
     
-    Env("rich", python="3.12").run(uses_rich)
+    assert Env("rich", python="3.12").run(uses_rich, a=1, b=2) == 3
