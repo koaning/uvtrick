@@ -2,7 +2,7 @@
 
 ### uvtrick
 
-> A super duper hacky demo of a trick, via `uv` and pickle, to run Python code in another venv ... into this one.
+> A fun party trick, via `uv` and pickle, to run Python code from another venv ... into this one.
 
 ## Quickstart 
 
