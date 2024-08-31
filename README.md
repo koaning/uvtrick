@@ -64,3 +64,9 @@ def uses_rich(a, b):
 for version in (10, 11, 12, 13):
     Env(f"rich=={version}", python="3.12").run(uses_rich, a=1, b=2)
 ```
+
+Be aware that a lot of pickling is happening under the hood here. This can be a problem if you are trying to pickle large objects
+or if your function is returning an object that needs a dependency that is not installed in the environment that is calling `Env`. 
+
+Also note that thusfar this entire project is merely the result of a very entertaining recreational programming session. 
+We might want to gather some community feedback before suggesting production usage. 
