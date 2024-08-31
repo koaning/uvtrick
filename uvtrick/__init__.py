@@ -1,3 +1,4 @@
+import textwrap
 import subprocess
 import pickle
 import inspect
@@ -79,22 +80,31 @@ def load(path, func):
 
 class Env:
     """Represents a virtual environment with a specific Python version and set of dependencies."""
-    def __init__(self, *requirements, python=None):
+    def __init__(self, *requirements, python=None, debug=False):
         self.requirements = requirements
         self.python = python
+        self.debug = debug
 
     def run(self, func, *args, **kwargs):
         """Run a function in the virtual environment using uv."""
-        contents = inspect.getsource(func)
+        contents = textwrap.dedent(inspect.getsource(func))
         contents += "\n\n"
         contents += argskwargs_to_maincall(func, *args, **kwargs)
+
         
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir = Path(temp_dir)
             Path(temp_dir / "pytemp.py").write_text(contents)
+            
             deps = " ".join([f"--with {dep}" for dep in self.requirements])
             pyversion = f"--python {self.python}" if self.python else ""
-            subprocess.run(f"uv run --quiet {deps} {pyversion} {str(temp_dir / 'pytemp.py')}", shell=True, cwd=temp_dir)
+            quiet = "--quiet" if not self.debug else ""
+
+            if self.debug:
+                print(f"Running files in {temp_dir}")
+                print(f"uv run --quiet {deps} {pyversion} {str(temp_dir / 'pytemp.py')} \n\n")
+                print(contents)
+            subprocess.run(f"uv run {quiet} {deps} {pyversion} {str(temp_dir / 'pytemp.py')}", shell=True, cwd=temp_dir)
 
             temp_pickle_path = os.path.join(temp_dir, "tmp.pickle")
             with open(temp_pickle_path, 'rb') as file:
