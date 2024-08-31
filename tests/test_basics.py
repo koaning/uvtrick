@@ -25,11 +25,20 @@ def test_no_metadata():
         func = load("tests/rich-fail.py", "add")
         func()
 
-def test_env_works():
+def test_env_works1():
     def uses_rich(a, b):
         from rich import print
 
         print("hello")
         return a + b
-    
-    assert Env("rich", python="3.12").run(uses_rich, a=1, b=2) == 3
+
+    for version in ["13", "12"]:
+        assert Env(f"rich=={version}").run(uses_rich, a=1, b=2) == 3
+
+def test_env_works2():
+    def handles_all_types(arr, dictionary, string):
+        return {"arr": arr, "dictionary": dictionary, "string": string}
+
+    for version in ["13", "12"]:
+        out = Env(f"rich=={version}").run(handles_all_types, arr=[1, 2, 3], dictionary={"a": 1, "b": 2}, string="hello") 
+        assert out == {"arr": [1, 2, 3], "dictionary": {"a": 1, "b": 2}, "string": "hello"}

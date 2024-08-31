@@ -12,7 +12,9 @@ You can install this tool via:
 uv pip install uvtrick
 ```
 
-## Usage: 
+## Usage 
+
+### External scripts
 
 There are a few ways to use this library. The first one is to use the `load` function to point 
 to a Python script that contains the function you want to use. This function assumes that the 
@@ -30,6 +32,8 @@ add = load("some_script.py", "add")
 # with `uv`. A pickle in a temporary file is used to communicate the result.
 add(1, 2)  # 3
 ```
+
+### From within Python
 
 But you can also take it a step further and use the `Env` class to run a function in a specific environment. 
 
@@ -64,10 +68,8 @@ for version in (10, 11, 12, 13):
     Env(f"rich=={version}", python="3.12").run(uses_rich, a=1, b=2)
 ```
 
-#### Warning
+Be aware that a lot of pickling is happening under the hood here. This can be a problem if you are trying to pickle large objects
+or if your function is returning an object that needs a dependency that is not installed in the environment that is calling `Env`. 
 
-This is highly experimental work and merely the result of some recreational programming. At the moment everything is turned into
-Python files in temporary directories so that `uv` can easily pick it up. We use pickle to communicate results back, but the function
-inputs currently only work for integers and floats ... because these can be copied directly in plain text files. 
-
-We are thinking about ways to do this more generally with pickles. All in due (recreational) time!
+Also note that thusfar this entire project is merely the result of a very entertaining recreational programming session. 
+We might want to gather some community feedback before suggesting production usage. 
