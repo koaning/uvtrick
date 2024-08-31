@@ -14,6 +14,10 @@ uv pip install uvtrick
 
 ## Usage: 
 
+There are a few ways to use this library. The first one is to use the `load` function to point 
+to a Python script that contains the function you want to use. This function assumes that the 
+script carries [inline script metadata](https://packaging.python.org/en/latest/specifications/inline-script-metadata/). 
+
 ```python
 from uvtrick import load
 
@@ -27,7 +31,36 @@ add = load("some_script.py", "add")
 add(1, 2)  # 3
 ```
 
-Note that this approach is more of a demo, it is very hacky, should probably not be taken serious and it assumes that the Python script in question uses inline script metadata. More information on this feature can be found here:
+But you can also take it a step further and use the `Env` class to run a function in a specific environment. 
 
-- https://docs.astral.sh/uv/guides/scripts/#declaring-script-dependencies
-- https://packaging.python.org/en/latest/specifications/inline-script-metadata/#inline-script-metadata
+```python
+from uvtrick import Env
+
+# For illustration purposes, let's assume that rich is not part of the current environment. 
+# Also not that all the imports happen inside of this function. 
+def uses_rich(a, b):
+    from rich import print
+    print("hello")
+    return a + b
+
+# This runs the function `uses_rich` in a new environment with the `rich` package installed.
+# Just like the `load` function, the result is returned via pickle. 
+Env("rich", python="3.12").run(uses_rich, a=1, b=2)
+```
+
+This approach is pretty useful if you are interested in running the same function in different versions of 
+a dependency to spot a performance regression. You might be able to do that via something like:
+
+```python
+from uvtrick import Env
+
+def uses_rich(a, b):
+    from rich import print
+    print("hello")
+    return a + b
+
+# This runs the function `uses_rich` in a new environment with the `rich` package installed.
+# Just like the `load` function, the result is returned via pickle. 
+for version in (10, 11, 12, 13):
+    Env(f"rich=={version}", python="3.12").run(uses_rich, a=1, b=2)
+```
