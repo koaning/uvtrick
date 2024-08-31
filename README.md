@@ -37,7 +37,7 @@ But you can also take it a step further and use the `Env` class to run a functio
 from uvtrick import Env
 
 # For illustration purposes, let's assume that rich is not part of the current environment. 
-# Also not that all the imports happen inside of this function. 
+# Also note that all the imports happen inside of this function. 
 def uses_rich(a, b):
     from rich import print
     print("hello")
@@ -45,7 +45,8 @@ def uses_rich(a, b):
 
 # This runs the function `uses_rich` in a new environment with the `rich` package installed.
 # Just like the `load` function, the result is returned via pickle. 
-Env("rich", python="3.12").run(uses_rich, a=1, b=2)
+out = Env("rich", python="3.12").run(uses_rich, a=1, b=2)
+assert out == 3
 ```
 
 This approach is pretty useful if you are interested in running the same function in different versions of 
