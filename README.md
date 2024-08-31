@@ -12,7 +12,9 @@ You can install this tool via:
 uv pip install uvtrick
 ```
 
-## Usage: 
+## Usage 
+
+### External scripts
 
 There are a few ways to use this library. The first one is to use the `load` function to point 
 to a Python script that contains the function you want to use. This function assumes that the 
@@ -31,17 +33,18 @@ add = load("some_script.py", "add")
 add(1, 2)  # 3
 ```
 
+### From within Python
+
 But you can also take it a step further and use the `Env` class to run a function in a specific environment. 
 
 ```python
 from uvtrick import Env
 
 # For illustration purposes, let's assume that rich is not part of the current environment. 
-# Also not that all the imports happen inside of this function. 
-def uses_rich(a, b):
+# Also note that all the imports happen inside of this function. 
+def uses_rich():
     from rich import print
     print("hello")
-    return a + b
 
 # This runs the function `uses_rich` in a new environment with the `rich` package installed.
 # Just like the `load` function, the result is returned via pickle. 
