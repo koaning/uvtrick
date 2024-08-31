@@ -31,5 +31,6 @@ def test_env_works():
 
         print("hello")
         return a + b
-    
-    assert Env("rich", python="3.12").run(uses_rich, a=1, b=2) == 3
+
+    for version in ["13", "12"]:
+        assert Env(f"rich=={version}").run(uses_rich, a=1, b=2) == 3
