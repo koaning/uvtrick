@@ -63,6 +63,6 @@ class Env:
             # Finally run the `uv run` command in a subprocess
             if self.debug:
                 self.report(contents)
-            subprocess.run(self.cmd, cwd=temp_dir, check=True)
+            subprocess.run(" ".join(self.cmd), shell=True, cwd=temp_dir, check=True)
 
             return pickle.loads(output.read_bytes())

@@ -11,9 +11,9 @@ if __name__ == "__main__":
     import pickle
     from pathlib import Path
 
-    args, kwargs = pickle.loads(Path(inputs_path).read_bytes())
+    args, kwargs = pickle.loads(Path('{inputs_path!s}').read_bytes())
     result = {func_name}(*args, **kwargs)
-    Path(outputs_path).write_bytes(pickle.dumps(result))
+    Path('{outputs_path!s}').write_bytes(pickle.dumps(result))
 """
 
 

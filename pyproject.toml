@@ -13,7 +13,8 @@ classifiers = [
   "License :: OSI Approved :: MIT License"
 ]
 dependencies = [
-  "uv"
+  "uv",
+  "pytest>=8.3.2",
 ]
 description = "A fun party trick to run Python code from another venv into this one."
 license = {text = "MIT"}
@@ -25,3 +26,9 @@ requires-python = ">=3.8"
 [project.urls]
 Homepage = "https://github.com/lmmx/uvtrick"
 Repository = "https://github.com/lmmx/uvtrick.git"
+
+[tool.pdm.dev-dependencies]
+test = [
+    "inline-snapshot>=0.12.1",
+    "pytest>=8.3.2",
+]
