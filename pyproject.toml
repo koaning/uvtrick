@@ -14,7 +14,6 @@ classifiers = [
 ]
 dependencies = [
   "uv",
-  "pytest>=8.3.2",
 ]
 description = "A fun party trick to run Python code from another venv into this one."
 license = {text = "MIT"}
@@ -31,4 +30,10 @@ Repository = "https://github.com/lmmx/uvtrick.git"
 test = [
     "inline-snapshot>=0.12.1",
     "pytest>=8.3.2",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.3.2",
+    "inline-snapshot>=0.12.1",
 ]

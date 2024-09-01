@@ -12,3 +12,4 @@ add = load(script, "add")
 result = add(1, 2)  # 3
 
 assert result == 3
+print(result)
