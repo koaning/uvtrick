@@ -20,34 +20,52 @@ class Env:
         self.requirements = requirements
         self.python = python
         self.debug = debug
+        self.temp_dir: Path | None = None
+
+    @property
+    def inputs(self):
+        return self.temp_dir / PICKLED_INPUTS_FNAME
+
+    @property
+    def script(self):
+        return self.temp_dir / SCRIPT_FNAME
+
+    @property
+    def output(self):
+        return self.temp_dir / PICKLED_OUTPUTS_FNAME
+
+    @property
+    def cmd(self) -> list[str]:
+        quiet = "" if self.debug else "--quiet"
+        deps = [f"--with {dep}" for dep in self.requirements]
+        pyversion = f"--python {self.python}" if self.python else ""
+        return ["uv", "run", quiet, *deps, pyversion, str(self.script)]
+
+    def report(self, contents: str) -> None:
+        print(f"Running files in {self.temp_dir}\n{self.cmd}")
+        args, kwargs = pickle.loads(self.inputs.read_bytes())
+        print(f"Pickled args: {args}")
+        print(f"Pickled kwargs: {kwargs}")
+        print(f"Contents of the script:\n\n{contents}")
+        return
 
     def run(self, func, *args, **kwargs):
         """Run a function in the virtual environment using uv."""
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            temp_dir = Path(temp_dir)
-            inputs = temp_dir / PICKLED_INPUTS_FNAME
-            script = temp_dir / SCRIPT_FNAME
-            output = temp_dir / PICKLED_OUTPUTS_FNAME
+            self.temp_dir = Path(temp_dir)
+            inputs, script, output = self.inputs, self.script, self.output
 
             # Let's first pickle the inputs
-            inputs.write_bytes(pickle.dumps((args, kwargs)))
+            self.inputs.write_bytes(pickle.dumps((args, kwargs)))
 
             # Now write the contents of the script
             contents = dedent(getsource(func)) + "\n\n" + maincall(func, inputs, output)
             script.write_text(contents)
 
-            deps = [f"--with {dep}" for dep in self.requirements]
-            pyversion = f"--python {self.python}" if self.python else ""
-            quiet = "" if self.debug else "--quiet"
-
-            cmd = ["uv", "run", quiet, *deps, pyversion, str(script)]
+            # Finally run the `uv run` command in a shell subprocess
             if self.debug:
-                print(f"Running files in {temp_dir}\n{cmd}")
-                args, kwargs = pickle.loads(inputs.read_bytes())
-                print(f"Pickled args: {args}")
-                print(f"Pickled kwargs: {kwargs}")
-                print(f"Contents of the script:\n\n{contents}")
-            subprocess.run(cmd, shell=True, cwd=temp_dir)
+                self.report(contents)
+            subprocess.run(self.cmd, shell=True, cwd=temp_dir)
 
             return pickle.loads(output.read_bytes())
