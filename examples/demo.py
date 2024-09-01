@@ -16,9 +16,11 @@ print(f"{add(a=1, b=2)=}")
 rich_versions = (10, 11, 12, 13)
 print(f"Now iterating through {rich_versions=}:")
 
+
 def uses_rich(a, b):
     from rich import print
     from importlib import metadata
+
     version = metadata.version("rich")
 
     print(f"hello from rich=={version}")
