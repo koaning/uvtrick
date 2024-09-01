@@ -23,7 +23,7 @@ script carries [inline script metadata](https://packaging.python.org/en/latest/s
 ```python
 from uvtrick import load
 
-# Load the function `hello` from the file `some_script.py`
+# Load the function `add` from the file `some_script.py`
 # It runs in another virtualenv, but you get back the response via pickle. 
 # Be aware of the limitations, please only consider base Python objects.
 add = load("some_script.py", "add")
