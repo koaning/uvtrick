@@ -113,10 +113,11 @@ class Env:
         return
 
     def maincall(self, func: Callable) -> str:
-        """A main block to deserialise a function signature then serialise a result."""
+        """A main block to deserialise a function signature then serialise a result.
 
         Load the args/kwargs from an 'inputs' pickle, call a Python function
-        with them, and store the result in an 'output' pickle."""
+        with them, and store the result in an 'output' pickle.
+        """
         func_name = func.__name__
         inputs_path, output_path = self.inputs, self.output
         return dedent(f"""
