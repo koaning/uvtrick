@@ -91,13 +91,27 @@ class Env:
         self.requirements = requirements
         self.python = python
         self.debug = debug
+        self.temp_dir: Path = None
+
+    @property
+    def inputs(self) -> Path:
+        return self.temp_dir / "pickled_inputs.pickle"
+
+    @property
+    def script(self) -> Path:
+        return self.temp_dir / "pytemp.py"
+
+    @property
+    def output(self) -> Path:
+        return self.temp_dir / "tmp.pickle"
 
     def run(self, func, *args, **kwargs):
         """Run a function in the virtual environment using uv."""
         
         with tempfile.TemporaryDirectory() as temp_dir:
+            self.temp_dir = Path(temp_dir)
+            temp_dir = self.temp_dir
             # Lets first pickle the inputs
-            temp_dir = Path(temp_dir)
             with open(temp_dir / "pickled_inputs.pickle", "wb") as f:
                 pickle.dump((args, kwargs), f)
             
@@ -121,7 +135,7 @@ class Env:
                 print(f"Contents of the script:\n\n {contents}")
             subprocess.run(f"uv run {quiet} {deps} {pyversion} {str(temp_dir / 'pytemp.py')}", shell=True, cwd=temp_dir)
 
-            temp_pickle_path = os.path.join(temp_dir, "tmp.pickle")
+            temp_pickle_path = os.path.join(self.temp_dir, "tmp.pickle")
             with open(temp_pickle_path, 'rb') as file:
                 loaded_data = pickle.load(file)
         return loaded_data
