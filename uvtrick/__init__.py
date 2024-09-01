@@ -130,15 +130,13 @@ class Env:
 
     def run(self, func, *args, **kwargs):
         """Run a function in the virtual environment using uv."""
-        
         with tempfile.TemporaryDirectory() as temp_dir:
             self.temp_dir = Path(temp_dir)
             # First pickle the inputs
             self.inputs.write_bytes(pickle.dumps((args, kwargs)))
             # Now write the contents of the script
-            contents = textwrap.dedent(inspect.getsource(func))
-            contents += "\n\n"
-            contents += self.maincall(func)
+            func_source = textwrap.dedent(inspect.getsource(func))
+            contents = func_source + "\n\n" + self.maincall(func)
             self.script.write_text(contents)
 
             if self.debug:
