@@ -34,6 +34,9 @@ def uvtrick_(path, func, *args, **kwargs):
 
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir = Path(temp_dir)
+        script = temp_dir / "pytemp.py"
+        output = temp_dir / "tmp.pickle"
+
         code = Path(path).read_text()
         idx = code.find("if __name__")
         code = code[:idx] + "\n\n"
@@ -48,14 +51,11 @@ def uvtrick_(path, func, *args, **kwargs):
     with open('tmp.pickle', 'wb') as f:
         pickle.dump({func}({string_args} {string_kwargs}), f)\n"""
 
-        Path(temp_dir / "pytemp.py").write_text(code)
+        script.write_text(code)
         # print(code)
         subprocess.run(f"uv run --quiet {str(temp_dir / 'pytemp.py')}", shell=True, cwd=temp_dir)
 
-        temp_pickle_path = os.path.join(temp_dir, "tmp.pickle")
-        with open(temp_pickle_path, 'rb') as file:
-            loaded_data = pickle.load(file)
-    return loaded_data
+        return pickle.loads(output.read_bytes())
 
 
 def load(path, func):
