@@ -5,6 +5,12 @@ import tempfile
 
 __all__ = ("uvtrick_",)
 
+template = """
+if __name__ == "__main__":
+    import pickle
+    with open('tmp.pickle', 'wb') as f:
+        pickle.dump({func}({string_args} {string_kwargs}), f)
+"""
 
 def uvtrick_(path, func, *args, **kwargs):
     """This is a *very* hacky way to run functions from Python files from another virtual environment."""
@@ -25,14 +31,11 @@ def uvtrick_(path, func, *args, **kwargs):
         if "# /// script" not in code:
             raise ValueError("Script metadata/dependencies not found in the file")
 
-        code += f"""if __name__ == "__main__":
-    import pickle
-    with open('tmp.pickle', 'wb') as f:
-        pickle.dump({func}({string_args} {string_kwargs}), f)\n"""
+        code += template.format(func=func, string_args=string_args, string_kwargs=string_kwargs)
         script.write_text(code)
         # print(code)
 
         cmd = ["uv", "run", "--quiet", str(script)]
-        subprocess.run(cmd, shell=True, cwd=temp_dir)
+        subprocess.run(cmd, cwd=temp_dir, check=True)
 
         return pickle.loads(output.read_bytes())

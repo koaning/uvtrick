@@ -60,9 +60,9 @@ class Env:
             contents = dedent(getsource(func)) + "\n\n" + maincall(func, inputs, output)
             script.write_text(contents)
 
-            # Finally run the `uv run` command in a shell subprocess
+            # Finally run the `uv run` command in a subprocess
             if self.debug:
                 self.report(contents)
-            subprocess.run(self.cmd, shell=True, cwd=temp_dir)
+            subprocess.run(self.cmd, cwd=temp_dir, check=True)
 
             return pickle.loads(output.read_bytes())
