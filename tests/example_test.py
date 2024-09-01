@@ -7,7 +7,7 @@ def test_hello(capsys):
     assert capsys.readouterr().out == snapshot(
         """\
 hello()=1
-"""
+""",
     )
 
 
@@ -17,7 +17,7 @@ def test_add(capsys):
         """\
 add(1, 2)=3
 add(a=1, b=2)=3
-"""
+""",
     )
 
 
@@ -30,7 +30,7 @@ Now iterating through rich_versions=(10, 11, 12, 13):
  --> add(1, 2) = 3
  --> add(1, 2) = 3
  --> add(1, 2) = 3
-"""
+""",
     )
 
 
@@ -39,5 +39,5 @@ def test_simple(capsys):
     assert capsys.readouterr().out == snapshot(
         """\
 3
-"""
+""",
     )
