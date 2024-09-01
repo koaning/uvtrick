@@ -104,6 +104,7 @@ class Env:
         return ["uv", "run", *quiet, *deps, *pyversion, str(self.script)]
 
     def report(self, contents: str) -> None:
+        """Log the temporary dir, input kw/args and intermediate script to STDOUT."""
         print(f"Running files in {self.temp_dir}\n{self.cmd}")
         args, kwargs = pickle.loads(self.inputs.read_bytes())
         print(f"Pickled args: {args}")
@@ -112,6 +113,10 @@ class Env:
         return
 
     def maincall(self, func: Callable) -> str:
+        """A main block to deserialise a function signature then serialise a result."""
+
+        Load the args/kwargs from an 'inputs' pickle, call a Python function
+        with them, and store the result in an 'output' pickle."""
         func_name = func.__name__
         inputs_path, output_path = self.inputs, self.output
         return dedent(f"""
@@ -128,17 +133,14 @@ class Env:
         """Run a function in the virtual environment using uv."""
         with tempfile.TemporaryDirectory() as temp_dir:
             self.temp_dir = Path(temp_dir)
-
-            # Let's first pickle the inputs
+            # First pickle the inputs
             self.inputs.write_bytes(pickle.dumps((args, kwargs)))
-
             # Now write the contents of the script
             contents = dedent(getsource(func)) + "\n\n" + self.maincall(func)
             self.script.write_text(contents)
-
-            # Finally run the `uv run` command in a subprocess
+            # Then run the script with `uv run` in a subprocess
             if self.debug:
                 self.report(contents)
             subprocess.run(self.cmd, cwd=temp_dir, check=True)
-
+            # Lastly load the stored result of running the script
             return pickle.loads(self.output.read_bytes())
