@@ -3,8 +3,8 @@
 import pytest 
 from uvtrick import load, Env
 
-hello = load("tests/rich_script.py", "hello")
-add = load("tests/rich_script.py", "add")
+hello = load("tests/assets/rich_script.py", "hello")
+add = load("tests/assets/rich_script.py", "add")
 
 
 def test_smoke():
@@ -17,7 +17,7 @@ def test_args():
 
 def test_no_exist():
     with pytest.raises(ValueError):
-        func = load("tests/rich_script.py", "no_exist")
+        func = load("tests/assets/rich_script.py", "no_exist")
         func()
 
 def test_no_metadata():
