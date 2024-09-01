@@ -18,7 +18,8 @@ uv pip install uvtrick
 
 There are a few ways to use this library. The first one is to use the `load` function to point
 to a Python script that contains the function you want to use. This function assumes that the
-script carries [inline script metadata](https://packaging.python.org/en/latest/specifications/inline-script-metadata/).
+script carries [inline script metadata](https://packaging.python.org/en/latest/specifications/inline-script-metadata/),
+as [supported by uv](https://docs.astral.sh/uv/guides/scripts/#running-a-script-with-dependencies).
 
 ```python
 from uvtrick import load
