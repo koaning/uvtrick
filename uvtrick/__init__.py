@@ -101,6 +101,7 @@ class Env:
         return ["uv", "run", *quiet, *deps, *pyversion, str(self.script)]
 
     def report(self, contents: str) -> None:
+        """Log the temporary dir, input kw/args and intermediate script to STDOUT."""
         print(f"Running files in {self.temp_dir}\n{self.cmd}")
         args, kwargs = pickle.loads(self.inputs)
         print(f"Pickled args: {args}")
