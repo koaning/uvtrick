@@ -137,7 +137,10 @@ class Env:
             # First pickle the inputs
             self.inputs.write_bytes(pickle.dumps((args, kwargs)))
             # Now write the contents of the script
-            contents = dedent(getsource(func)) + "\n\n" + self.maincall(func)
+            funcdef_code = dedent(getsource(func))
+            if funcdef_code.startswith("@with_package_versions"):
+                funcdef_code = funcdef_code[funcdef_code.find("\ndef "):]
+            contents = funcdef_code + "\n\n" + self.maincall(func)
             self.script.write_text(contents)
             # Then run the script with `uv run` in a subprocess
             if self.debug:
