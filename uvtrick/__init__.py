@@ -95,16 +95,17 @@ class Env:
         """Run a function in the virtual environment using uv."""
         
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Lets first pickle the inputs
             temp_dir = Path(temp_dir)
-            with open(temp_dir / "pickled_inputs.pickle", "wb") as f:
-                pickle.dump((args, kwargs), f)
-            
+            inputs = temp_dir / "pickled_inputs.pickle"
+            script = temp_dir / "pytemp.py"
+            output = temp_dir / "tmp.pickle"
+            # First pickle the inputs
+            inputs.write_bytes(pickle.dumps((args, kwargs)))
             # Now write the contents of the script
             contents = textwrap.dedent(inspect.getsource(func))
             contents += "\n\n"
             contents += maincall(func, temp_dir / PICKLED_INPUTS_PATH, temp_dir / PICKLED_OUTPUTS_PATH)
-            Path(temp_dir / "pytemp.py").write_text(contents)
+            script.write_text(contents)
             
             deps = " ".join([f"--with {dep}" for dep in self.requirements])
             pyversion = f"--python {self.python}" if self.python else ""
@@ -120,7 +121,4 @@ class Env:
                 print(f"Contents of the script:\n\n {contents}")
             subprocess.run(f"uv run {quiet} {deps} {pyversion} {str(temp_dir / 'pytemp.py')}", shell=True, cwd=temp_dir)
 
-            temp_pickle_path = os.path.join(temp_dir, "tmp.pickle")
-            with open(temp_pickle_path, 'rb') as file:
-                loaded_data = pickle.load(file)
-        return loaded_data
+            return pickle.loads(output.read_bytes())
