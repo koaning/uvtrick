@@ -1,5 +1,6 @@
 import pickle
 import subprocess
+import sys
 import tempfile
 from collections.abc import Callable
 from inspect import getsource
@@ -56,18 +57,19 @@ def uvtrick_(path: str | Path, func: Callable, *args, **kwargs):
         if "# /// script" not in code:
             raise ValueError("Script metadata/dependencies not found in the file")
 
-        main_template = dedent("""
+        main_block = dedent(f"""
         if __name__ == "__main__":
             import pickle
             with open('tmp.pickle', 'wb') as f:
                 pickle.dump({func}({string_args} {string_kwargs}), f)
         """)
 
-        code += main_template.format(
-            func=func, string_args=string_args, string_kwargs=string_kwargs
-        )
+        code += main_block
         script.write_text(code)
-        # print(code)
+        if "pytest" in sys.modules:
+            file = Path(path).name
+            logged_code = f"script:\n{file=}\n{func=}\ncode=```\n{code}```"
+            print(logged_code, file=sys.stderr)
 
         cmd = ["uv", "run", "--quiet", str(script)]
         subprocess.run(cmd, cwd=temp_dir, check=True)
