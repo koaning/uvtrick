@@ -7,35 +7,7 @@ from inspect import getsource
 from pathlib import Path
 from textwrap import dedent
 
-__all__ = ("load", "uvtrick_", "Env")
-
-
-def load(path: str | Path, func: Callable) -> Callable:
-    """
-    Load a function from a Python file, this function will be executed in a separate virtual environment using uv.
-
-    Note that this approach is more of a demo, it is very hacky and it assumes that the Python script in question
-    uses inline script metadata. More information on this feature can be found here:
-
-    - https://docs.astral.sh/uv/guides/scripts/#declaring-script-dependencies
-    - https://packaging.python.org/en/latest/specifications/inline-script-metadata/#inline-script-metadata
-
-    Usage:
-
-    ```python
-    from uvtrick import load
-
-    # Load the function `hello` from the file `some_script.py`
-    # It runs in another virtualenv, but you get back the response via pickle.
-    # Be aware of the limitations, please only consider base Python objects.
-    hello = load("some_script.py", "hello")
-    ```
-    """
-
-    def load_func(*args, **kwargs):
-        return uvtrick_(path, func, *args, **kwargs)
-
-    return load_func
+__all__ = ("uvtrick_", "load", "Env")
 
 
 def uvtrick_(path: str | Path, func: Callable, *args, **kwargs):
@@ -73,6 +45,34 @@ def uvtrick_(path: str | Path, func: Callable, *args, **kwargs):
         subprocess.run(cmd, cwd=temp_dir, check=True)
 
         return pickle.loads(output.read_bytes())
+
+
+def load(path: str | Path, func: Callable) -> Callable:
+    """
+    Load a function from a Python file, this function will be executed in a separate virtual environment using uv.
+
+    Note that this approach is more of a demo, it is very hacky and it assumes that the Python script in question
+    uses inline script metadata. More information on this feature can be found here:
+
+    - https://docs.astral.sh/uv/guides/scripts/#declaring-script-dependencies
+    - https://packaging.python.org/en/latest/specifications/inline-script-metadata/#inline-script-metadata
+
+    Usage:
+
+    ```python
+    from uvtrick import load
+
+    # Load the function `hello` from the file `some_script.py`
+    # It runs in another virtualenv, but you get back the response via pickle.
+    # Be aware of the limitations, please only consider base Python objects.
+    hello = load("some_script.py", "hello")
+    ```
+    """
+
+    def load_func(*args, **kwargs):
+        return uvtrick_(path, func, *args, **kwargs)
+
+    return load_func
 
 
 class Env:

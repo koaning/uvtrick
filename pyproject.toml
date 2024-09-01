@@ -1,6 +1,6 @@
 [project]
 authors = [
-  {name = "Vincent D Warmerdam"},
+  {name = "Vincent D Warmerdam"}
 ]
 classifiers = [
   "Development Status :: 3 - Beta",
