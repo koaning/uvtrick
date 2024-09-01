@@ -33,10 +33,10 @@ class Env:
 
     @property
     def cmd(self) -> list[str]:
-        quiet = "" if self.debug else "--quiet"
-        deps = [f"--with {dep}" for dep in self.requirements]
-        pyversion = f"--python {self.python}" if self.python else ""
-        return ["uv", "run", quiet, *deps, pyversion, str(self.script)]
+        quiet = [] if self.debug else ["--quiet"]
+        deps = [f"--with={dep}" for dep in self.requirements]
+        pyversion = [f"--python={self.python}"] if self.python else []
+        return ["uv", "run", *quiet, *deps, *pyversion, str(self.script)]
 
     def report(self, contents: str) -> None:
         print(f"Running files in {self.temp_dir}\n{self.cmd}")
@@ -63,6 +63,6 @@ class Env:
             # Finally run the `uv run` command in a subprocess
             if self.debug:
                 self.report(contents)
-            subprocess.run(" ".join(self.cmd), shell=True, cwd=temp_dir, check=True)
+            subprocess.run(self.cmd, cwd=temp_dir, check=True)
 
             return pickle.loads(output.read_bytes())

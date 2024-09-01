@@ -41,6 +41,6 @@ def uvtrick_(path, func, *args, **kwargs):
         # print(code)
 
         cmd = ["uv", "run", "--quiet", str(script)]
-        subprocess.run(" ".join(cmd), shell=True, cwd=temp_dir, check=True)
+        subprocess.run(cmd, cwd=temp_dir, check=True)
 
         return pickle.loads(output.read_bytes())
