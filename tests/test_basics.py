@@ -22,7 +22,7 @@ def test_no_exist():
 
 def test_no_metadata():
     with pytest.raises(ValueError):
-        func = load("tests/rich-fail.py", "add")
+        func = load("tests/rich_fail.py", "add")
         func()
 
 def test_env_works1():
