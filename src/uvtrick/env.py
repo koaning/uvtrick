@@ -4,7 +4,6 @@ import pickle
 from inspect import getsource
 from pathlib import Path
 import tempfile
-import os
 
 from .core import maincall
 
