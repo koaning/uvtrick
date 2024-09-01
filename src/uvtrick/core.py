@@ -1,18 +1,19 @@
+from typing import Callable
 from .trick import uvtrick_
 
 __all__ = ("maincall", "load")
 
 
-def maincall(func, inputs_path, outputs_path):
+def maincall(func: Callable, inputs_path: str, outputs_path: str) -> str:
+    func_name = func.__name__
     return f"""
 if __name__ == "__main__":
     import pickle
+    from pathlib import Path
 
-    with open('{inputs_path}', 'rb') as file:
-        args, kwargs = pickle.load(file)
-
-    with open('{outputs_path}', 'wb') as f:
-        pickle.dump({func.__name__}(*args, **kwargs), f)
+    args, kwargs = pickle.loads(Path(inputs_path).read_bytes())
+    result = {func_name}(*args, **kwargs)
+    Path(outputs_path).write_bytes(pickle.dumps(result))
 """
 
 
