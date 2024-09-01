@@ -112,6 +112,14 @@ class Env:
         pyversion = [f"--python={self.python}"] if self.python else []
         return ["uv", "run", *quiet, *deps, *pyversion, str(self.script)]
 
+    def report(self, contents: str) -> None:
+        print(f"Running files in {self.temp_dir}\n{self.cmd}")
+        args, kwargs = pickle.loads(self.inputs)
+        print(f"Pickled args: {args}")
+        print(f"Pickled kwargs: {kwargs}")
+        print(f"Contents of the script:\n\n{contents}")
+        return
+
     def run(self, func, *args, **kwargs):
         """Run a function in the virtual environment using uv."""
         
@@ -126,11 +134,7 @@ class Env:
             self.script.write_text(contents)
 
             if self.debug:
-                print(f"Running files in {temp_dir}\n{self.cmd}")
-                pickle.loads(self.inputs)
-                print(f"Pickled args: {args}")
-                print(f"Pickled kwargs: {kwargs}")
-                print(f"Contents of the script:\n\n {contents}")
+                self.report(contents)
             subprocess.run(self.cmd, cwd=temp_dir, check=True)
             # Lastly load the stored result of running the script
             return pickle.loads(self.output.read_bytes())
