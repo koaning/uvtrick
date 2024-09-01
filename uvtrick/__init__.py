@@ -1,21 +1,24 @@
+from __future__ import annotations
+
 import inspect
 import os
 import pickle
 import subprocess
 import tempfile
 import textwrap
+from collections.abc import Callable
 from pathlib import Path
 
 PICKLED_INPUTS_PATH = "pickled_inputs.pickle"
 PICKLED_OUTPUTS_PATH = "tmp.pickle"
 
-def argskwargs_to_callstring(func, *args, **kwargs):
+def argskwargs_to_callstring(func, *args, **kwargs) -> str:
     string_kwargs = ", ".join([f"{k}={v}" for k, v in kwargs.items()])
     string_args = ", ".join([f"{a}" for a in args]) + ", " if args else ""
     return f"{func.__name__}({string_args} {string_kwargs})"
 
 
-def maincall(func, inputs_path, outputs_path):
+def maincall(func: Callable, inputs_path, outputs_path) -> str:
     return f"""
 if __name__ == "__main__":
     import pickle
@@ -27,7 +30,7 @@ if __name__ == "__main__":
         pickle.dump({func.__name__}(*args, **kwargs), f)
 """
 
-def uvtrick_(path, func, *args, **kwargs):
+def uvtrick_(path: str | Path, func: Callable, *args, **kwargs):
     """This is a *very* hacky way to run functions from Python files from another virtual environment."""
     string_kwargs = ", ".join([f"{k}={v}" for k, v in kwargs.items()])
     string_args = ", ".join([f"{a}" for a in args]) + ", " if args else ""
@@ -59,7 +62,7 @@ def uvtrick_(path, func, *args, **kwargs):
     return loaded_data
 
 
-def load(path, func):
+def load(path: str | Path, func: Callable) -> Callable:
     """
     Load a function from a Python file, this function will be executed in a separate virtual environment using uv.
     
@@ -87,12 +90,12 @@ def load(path, func):
 
 class Env:
     """Represents a virtual environment with a specific Python version and set of dependencies."""
-    def __init__(self, *requirements, python=None, debug=False):
+    def __init__(self, *requirements: str, python: str = None, debug: bool = False):
         self.requirements = requirements
         self.python = python
         self.debug = debug
 
-    def run(self, func, *args, **kwargs):
+    def run(self, func: Callable, *args, **kwargs):
         """Run a function in the virtual environment using uv."""
         
         with tempfile.TemporaryDirectory() as temp_dir:
