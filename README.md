@@ -48,7 +48,7 @@ def uses_rich():
 
 # This runs the function `uses_rich` in a new environment with the `rich` package installed.
 # Just like the `load` function before, the result is returned via pickle. 
-Env("rich", python="3.12").run(uses_rich, a=1, b=2)
+Env("rich", python="3.12").run(uses_rich)
 ```
 
 This approach is pretty useful if you are interested in running the same function in different versions of 
