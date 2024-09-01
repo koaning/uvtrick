@@ -7,32 +7,29 @@ import tempfile
 
 from .core import maincall
 
-
-PICKLED_INPUTS_FNAME = "pickled_inputs.pickle"
-SCRIPT_FNAME = "pytemp.py"
-PICKLED_OUTPUTS_FNAME = "tmp.pickle"
+__all__ = ("Env",)
 
 
 class Env:
     """Represents a virtual environment with a specific Python version and set of dependencies."""
 
-    def __init__(self, *requirements, python=None, debug=False):
+    def __init__(self, *requirements: str, python: str = None, debug: bool = False):
         self.requirements = requirements
         self.python = python
         self.debug = debug
-        self.temp_dir: Path | None = None
+        self.temp_dir: Path = None
 
     @property
-    def inputs(self):
-        return self.temp_dir / PICKLED_INPUTS_FNAME
+    def inputs(self) -> Path:
+        return self.temp_dir / "pickled_inputs.pickle"
 
     @property
-    def script(self):
-        return self.temp_dir / SCRIPT_FNAME
+    def script(self) -> Path:
+        return self.temp_dir / "pytemp.py"
 
     @property
-    def output(self):
-        return self.temp_dir / PICKLED_OUTPUTS_FNAME
+    def output(self) -> Path:
+        return self.temp_dir / "tmp.pickle"
 
     @property
     def cmd(self) -> list[str]:
