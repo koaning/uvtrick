@@ -19,12 +19,11 @@ def maincall(func, inputs_path, outputs_path):
     return f"""
 if __name__ == "__main__":
     import pickle
+    from pathlib import Path
 
-    with open('{inputs_path}', 'rb') as file:
-        args, kwargs = pickle.load(file)
-
-    with open('{outputs_path}', 'wb') as f:
-        pickle.dump({func.__name__}(*args, **kwargs), f)
+    args, kwargs = pickle.loads(Path('{inputs_path!s}').read_bytes())
+    result = {func.__name__}(*args, **kwargs)
+    Path('{outputs_path!s}').write_bytes(pickle.dumps(result))
 """
 
 def uvtrick_(path, func, *args, **kwargs):
