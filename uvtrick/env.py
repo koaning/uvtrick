@@ -4,10 +4,25 @@ import pickle
 from inspect import getsource
 from pathlib import Path
 import tempfile
+from collections.abc import Callable
 
-from .core import maincall
+__all__ = (
+    "maincall",
+    "Env",
+)
 
-__all__ = ("Env",)
+
+def maincall(func: Callable, inputs_path: str, outputs_path: str) -> str:
+    func_name = func.__name__
+    return f"""
+if __name__ == "__main__":
+    import pickle
+    from pathlib import Path
+
+    args, kwargs = pickle.loads(Path('{inputs_path!s}').read_bytes())
+    result = {func_name}(*args, **kwargs)
+    Path('{outputs_path!s}').write_bytes(pickle.dumps(result))
+"""
 
 
 class Env:
