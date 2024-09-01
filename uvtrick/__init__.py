@@ -6,8 +6,6 @@ from pathlib import Path
 import tempfile
 import os
 
-PICKLED_INPUTS_PATH = "pickled_inputs.pickle"
-PICKLED_OUTPUTS_PATH = "tmp.pickle"
 
 def argskwargs_to_callstring(func, *args, **kwargs):
     string_kwargs = ", ".join([f"{k}={v}" for k, v in kwargs.items()])
