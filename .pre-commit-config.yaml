@@ -22,7 +22,7 @@ repos:
       - id: debug-statements
       - id: end-of-file-fixer
       - id: name-tests-test
-        exclude: tests/rich_script.py|tests/rich_fail.py
+        exclude: tests/assets
       - id: trailing-whitespace
   - repo: https://github.com/pappasam/toml-sort
     rev: v0.23.1
