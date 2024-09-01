@@ -1,2 +1,4 @@
-from .core import *
-from .trick import uvtrick
+from .core import load
+from .trick import uvtrick_
+
+__all__ = ("load", "uvtrick_")
