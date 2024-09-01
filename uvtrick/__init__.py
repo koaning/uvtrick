@@ -16,6 +16,11 @@ def argskwargs_to_callstring(func, *args, **kwargs):
 
 
 def maincall(func, inputs_path, outputs_path):
+    """A main block to deserialise a function signature then serialise a result.
+
+    Load the args/kwargs from an 'inputs' pickle, call a Python function
+    with them, and store the result in an 'output' pickle.
+    """
     return f"""
 if __name__ == "__main__":
     import pickle
