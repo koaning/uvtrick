@@ -116,7 +116,7 @@ class Env:
             # Now write the contents of the script
             contents = textwrap.dedent(inspect.getsource(func))
             contents += "\n\n"
-            contents += maincall(func, temp_dir / PICKLED_INPUTS_PATH, temp_dir / PICKLED_OUTPUTS_PATH)
+            contents += self.maincall(func, temp_dir / PICKLED_INPUTS_PATH, temp_dir / PICKLED_OUTPUTS_PATH)
             script.write_text(contents)
             
             quiet = [] if self.debug else ["--quiet"]
