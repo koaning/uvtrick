@@ -1,7 +1,8 @@
 """When I hacks this bad, I write tests."""
 
 import pytest
-from uvtrick import load, Env
+
+from uvtrick import Env, load
 
 hello = load("tests/rich-script.py", "hello")
 add = load("tests/rich-script.py", "add")

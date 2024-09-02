@@ -28,8 +28,9 @@ def test_rich_versions():
 
 
     def uses_rich(a, b):
-        from rich import print
         from importlib import metadata
+
+        from rich import print
 
         version = metadata.version("rich")
 
