@@ -2,6 +2,9 @@ from pathlib import Path
 
 test_assets_dir = Path(__file__).parent
 
+def test_demo():
+    import demo
+
 def test_add():
     from uvtrick import load
 
