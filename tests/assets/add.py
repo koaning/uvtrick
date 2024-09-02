@@ -1,8 +1,8 @@
 from pathlib import Path
 from uvtrick import load
 
-tests_dir = Path(__file__).parents[1] / "tests" / "assets"
-script = tests_dir / "rich_script.py"
+test_assets_dir = Path(__file__).parent
+script = test_assets_dir / "rich_script.py"
 
 add = load(script, "add")
 

@@ -2,4 +2,4 @@ from pytest import importorskip
 
 
 def test_add():
-    importorskip("examples.add")
+    importorskip("tests.assets.add")
