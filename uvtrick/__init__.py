@@ -18,17 +18,6 @@ def argskwargs_to_callstring(func, *args, **kwargs) -> str:
     return f"{func.__name__}({string_args} {string_kwargs})"
 
 
-def maincall(func: Callable, inputs_path, outputs_path) -> str:
-    return f"""
-if __name__ == "__main__":
-    import pickle
-    from pathlib import Path
-
-    args, kwargs = pickle.loads(Path('{inputs_path!s}').read_bytes())
-    result = {func.__name__}(*args, **kwargs)
-    Path('{outputs_path!s}').write_bytes(pickle.dumps(result))
-"""
-
 def uvtrick_(path: str | Path, func: Callable, *args, **kwargs):
     """This is a *very* hacky way to run functions from Python files from another virtual environment."""
     string_kwargs = ", ".join([f"{k}={v}" for k, v in kwargs.items()])
@@ -95,6 +84,24 @@ class Env:
         self.python = python
         self.debug = debug
 
+    @staticmethod
+    def maincall(func, inputs_path, outputs_path):
+        """A main block to deserialise a function signature then serialise a result.
+
+        Load the args/kwargs from an 'inputs' pickle, call a Python function
+        with them, and store the result in an 'output' pickle.
+        """
+        func_name = func.__name__
+        return textwrap.dedent(f"""
+        if __name__ == "__main__":
+            import pickle
+            from pathlib import Path
+
+            args, kwargs = pickle.loads(Path('{inputs_path!s}').read_bytes())
+            result = {func_name}(*args, **kwargs)
+            Path('{outputs_path!s}').write_bytes(pickle.dumps(result))
+        """)
+
     def run(self, func: Callable, *args, **kwargs):
         """Run a function in the virtual environment using uv."""
         
@@ -109,7 +116,7 @@ class Env:
             # Now write the contents of the script
             contents = textwrap.dedent(inspect.getsource(func))
             contents += "\n\n"
-            contents += maincall(func, temp_dir / PICKLED_INPUTS_PATH, temp_dir / PICKLED_OUTPUTS_PATH)
+            contents += self.maincall(func, temp_dir / PICKLED_INPUTS_PATH, temp_dir / PICKLED_OUTPUTS_PATH)
             script.write_text(contents)
             
             quiet = [] if self.debug else ["--quiet"]
