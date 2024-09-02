@@ -1,21 +1,24 @@
-import textwrap
-import subprocess
-import pickle
+from __future__ import annotations
+
 import inspect
-from pathlib import Path
-import tempfile
 import os
+import pickle
+import subprocess
+import tempfile
+import textwrap
+from collections.abc import Callable
+from pathlib import Path
 
 PICKLED_INPUTS_PATH = "pickled_inputs.pickle"
 PICKLED_OUTPUTS_PATH = "tmp.pickle"
 
-def argskwargs_to_callstring(func, *args, **kwargs):
+def argskwargs_to_callstring(func, *args, **kwargs) -> str:
     string_kwargs = ", ".join([f"{k}={v}" for k, v in kwargs.items()])
     string_args = ", ".join([f"{a}" for a in args]) + ", " if args else ""
     return f"{func.__name__}({string_args} {string_kwargs})"
 
 
-def uvtrick_(path, func, *args, **kwargs):
+def uvtrick_(path: str | Path, func: Callable, *args, **kwargs):
     """This is a *very* hacky way to run functions from Python files from another virtual environment."""
     string_kwargs = ", ".join([f"{k}={v}" for k, v in kwargs.items()])
     string_args = ", ".join([f"{a}" for a in args]) + ", " if args else ""
@@ -23,6 +26,9 @@ def uvtrick_(path, func, *args, **kwargs):
 
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_dir = Path(temp_dir)
+        script = temp_dir / "pytemp.py"
+        output = temp_dir / "tmp.pickle"
+
         code = Path(path).read_text()
         idx = code.find("if __name__")
         code = code[:idx] + "\n\n"
@@ -37,17 +43,15 @@ def uvtrick_(path, func, *args, **kwargs):
     with open('tmp.pickle', 'wb') as f:
         pickle.dump({func}({string_args} {string_kwargs}), f)\n"""
 
-        Path(temp_dir / "pytemp.py").write_text(code)
+        script.write_text(code)
         # print(code)
-        subprocess.run(f"uv run --quiet {str(temp_dir / 'pytemp.py')}", shell=True, cwd=temp_dir)
+        cmd = ["uv", "run", "--quiet", str(script)]
+        subprocess.run(cmd, cwd=temp_dir, check=True)
 
-        temp_pickle_path = os.path.join(temp_dir, "tmp.pickle")
-        with open(temp_pickle_path, 'rb') as file:
-            loaded_data = pickle.load(file)
-    return loaded_data
+        return pickle.loads(output.read_bytes())
 
 
-def load(path, func):
+def load(path: str | Path, func: Callable) -> Callable:
     """
     Load a function from a Python file, this function will be executed in a separate virtual environment using uv.
     
@@ -75,7 +79,7 @@ def load(path, func):
 
 class Env:
     """Represents a virtual environment with a specific Python version and set of dependencies."""
-    def __init__(self, *requirements, python=None, debug=False):
+    def __init__(self, *requirements: str, python: str = None, debug: bool = False):
         self.requirements = requirements
         self.python = python
         self.debug = debug
@@ -98,37 +102,36 @@ class Env:
             Path('{outputs_path!s}').write_bytes(pickle.dumps(result))
         """)
 
-
-    def run(self, func, *args, **kwargs):
+    def run(self, func: Callable, *args, **kwargs):
         """Run a function in the virtual environment using uv."""
         
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Lets first pickle the inputs
             temp_dir = Path(temp_dir)
-            with open(temp_dir / "pickled_inputs.pickle", "wb") as f:
-                pickle.dump((args, kwargs), f)
-            
+            inputs = temp_dir / "pickled_inputs.pickle"
+            script = temp_dir / "pytemp.py"
+            output = temp_dir / "tmp.pickle"
+            # First pickle the inputs
+            inputs.write_bytes(pickle.dumps((args, kwargs)))
+
             # Now write the contents of the script
             contents = textwrap.dedent(inspect.getsource(func))
             contents += "\n\n"
-            contents += self.maincall(func, temp_dir / PICKLED_INPUTS_PATH, temp_dir / PICKLED_OUTPUTS_PATH)
-            Path(temp_dir / "pytemp.py").write_text(contents)
+            contents += maincall(func, temp_dir / PICKLED_INPUTS_PATH, temp_dir / PICKLED_OUTPUTS_PATH)
+            script.write_text(contents)
             
-            deps = " ".join([f"--with {dep}" for dep in self.requirements])
-            pyversion = f"--python {self.python}" if self.python else ""
-            quiet = "--quiet" if not self.debug else ""
+            quiet = [] if self.debug else ["--quiet"]
+            deps = [f"--with={dep}" for dep in self.requirements]
+            pyversion = [f"--python={self.python}"] if self.python else []
+            cmd = ["uv", "run", *quiet, *deps, *pyversion, str(script)]
 
             if self.debug:
-                print(f"Running files in {temp_dir}")
-                print(f"uv run --quiet {deps} {pyversion} {str(temp_dir / 'pytemp.py')}")
+                print(f"Running files in {temp_dir}\n{cmd}")
                 with open(temp_dir / PICKLED_INPUTS_PATH, 'rb') as file:
                     args, kwargs = pickle.load(file)
                 print(f"Pickled args: {args}")
                 print(f"Pickled kwargs: {kwargs}")
                 print(f"Contents of the script:\n\n {contents}")
-            subprocess.run(f"uv run {quiet} {deps} {pyversion} {str(temp_dir / 'pytemp.py')}", shell=True, cwd=temp_dir)
 
-            temp_pickle_path = os.path.join(temp_dir, "tmp.pickle")
-            with open(temp_pickle_path, 'rb') as file:
-                loaded_data = pickle.load(file)
-        return loaded_data
+            subprocess.run(cmd, cwd=temp_dir, check=True)
+
+            return pickle.loads(output.read_bytes())

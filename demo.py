@@ -1,4 +1,4 @@
-from uvtrick import load, Env
+from uvtrick import Env, load
 
 hello = load("tests/rich-script.py", "hello")
 
