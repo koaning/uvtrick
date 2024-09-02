@@ -11,7 +11,10 @@ print(add(a=1, b=2))
 
 def uses_rich(a, b):
     from rich import print
-    print("hello")
+    from importlib import metadata
+
+    version = metadata.version("rich")
+    print(f"hello from rich=={version}")
     return a + b
 
 # This runs the function `uses_rich` in a new environment with the `rich` package installed.

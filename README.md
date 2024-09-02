@@ -44,7 +44,10 @@ from uvtrick import Env
 # Also note that all the imports happen inside of this function. 
 def uses_rich():
     from rich import print
-    print("hello")
+    from importlib import metadata
+
+    version = metadata.version("rich")
+    print(f"hello from rich=={version}")
 
 # This runs the function `uses_rich` in a new environment with the `rich` package installed.
 # Just like the `load` function before, the result is returned via pickle. 
@@ -59,7 +62,10 @@ from uvtrick import Env
 
 def uses_rich(a, b):
     from rich import print
-    print("hello")
+    from importlib import metadata
+
+    version = metadata.version("rich")
+    print(f"hello from rich=={version}")
     return a + b
 
 for version in (10, 11, 12, 13):
