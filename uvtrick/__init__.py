@@ -111,7 +111,7 @@ class Env:
         print(f"Contents of the script:\n\n{contents}")
         return
 
-    def maincall(self, func) -> str:
+    def maincall(self, func: Callable) -> str:
         """A main block to deserialise a function signature then serialise a result.
 
         Load the args/kwargs from an 'inputs' pickle, call a Python function
@@ -127,25 +127,6 @@ class Env:
             args, kwargs = pickle.loads(Path('{inputs_path!s}').read_bytes())
             result = {func_name}(*args, **kwargs)
             Path('{output_path!s}').write_bytes(pickle.dumps(result))
-        """)
-
-
-    @staticmethod
-    def maincall(func, inputs_path, outputs_path):
-        """A main block to deserialise a function signature then serialise a result.
-
-        Load the args/kwargs from an 'inputs' pickle, call a Python function
-        with them, and store the result in an 'output' pickle.
-        """
-        func_name = func.__name__
-        return textwrap.dedent(f"""
-        if __name__ == "__main__":
-            import pickle
-            from pathlib import Path
-
-            args, kwargs = pickle.loads(Path('{inputs_path!s}').read_bytes())
-            result = {func_name}(*args, **kwargs)
-            Path('{outputs_path!s}').write_bytes(pickle.dumps(result))
         """)
 
     def run(self, func: Callable, *args, **kwargs):
