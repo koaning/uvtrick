@@ -1,10 +1,13 @@
-import textwrap
-import subprocess
-import pickle
+from __future__ import annotations
+
 import inspect
-from pathlib import Path
-import tempfile
 import os
+import pickle
+import subprocess
+import tempfile
+import textwrap
+from collections.abc import Callable
+from pathlib import Path
 
 PICKLED_INPUTS_PATH = "pickled_inputs.pickle"
 PICKLED_OUTPUTS_PATH = "tmp.pickle"
