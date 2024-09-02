@@ -114,7 +114,7 @@ class Env:
             
             quiet = [] if self.debug else ["--quiet"]
             deps = [f"--with={dep}" for dep in self.requirements]
-            pyversion = [f"--python=self.python"] if self.python else []
+            pyversion = [f"--python={self.python}"] if self.python else []
             cmd = ["uv", "run", *quiet, *deps, *pyversion, str(script)]
 
             if self.debug:
