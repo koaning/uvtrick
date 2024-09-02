@@ -56,7 +56,8 @@ def uvtrick_(path: str | Path, func: Callable, *args, **kwargs):
 
         script.write_text(code)
         # print(code)
-        subprocess.run(f"uv run --quiet {str(temp_dir / 'pytemp.py')}", shell=True, cwd=temp_dir)
+        cmd = ["uv", "run", "--quiet", str(script)]
+        subprocess.run(cmd, cwd=temp_dir, check=True)
 
         return pickle.loads(output.read_bytes())
 
@@ -104,24 +105,26 @@ class Env:
             output = temp_dir / "tmp.pickle"
             # First pickle the inputs
             inputs.write_bytes(pickle.dumps((args, kwargs)))
+
             # Now write the contents of the script
             contents = textwrap.dedent(inspect.getsource(func))
             contents += "\n\n"
             contents += maincall(func, temp_dir / PICKLED_INPUTS_PATH, temp_dir / PICKLED_OUTPUTS_PATH)
             script.write_text(contents)
             
-            deps = " ".join([f"--with {dep}" for dep in self.requirements])
-            pyversion = f"--python {self.python}" if self.python else ""
-            quiet = "--quiet" if not self.debug else ""
+            quiet = [] if self.debug else ["--quiet"]
+            deps = [f"--with={dep}" for dep in self.requirements]
+            pyversion = [f"--python={self.python}"] if self.python else []
+            cmd = ["uv", "run", *quiet, *deps, *pyversion, str(script)]
 
             if self.debug:
-                print(f"Running files in {temp_dir}")
-                print(f"uv run --quiet {deps} {pyversion} {str(temp_dir / 'pytemp.py')}")
+                print(f"Running files in {temp_dir}\n{cmd}")
                 with open(temp_dir / PICKLED_INPUTS_PATH, 'rb') as file:
                     args, kwargs = pickle.load(file)
                 print(f"Pickled args: {args}")
                 print(f"Pickled kwargs: {kwargs}")
                 print(f"Contents of the script:\n\n {contents}")
-            subprocess.run(f"uv run {quiet} {deps} {pyversion} {str(temp_dir / 'pytemp.py')}", shell=True, cwd=temp_dir)
+
+            subprocess.run(cmd, cwd=temp_dir, check=True)
 
             return pickle.loads(output.read_bytes())
