@@ -17,7 +17,7 @@ def fmt_output(text: str) -> list[str]:
         scripts = list(filter(None, text.split("script:\n")))
         # Use the 'code=' tag as a separator for the code block of a script in the log
         for script in scripts:
-            preamble, code = script.strip("\n").strip().split("code=", 1)
+            preamble, code_block = script.strip("\n").strip().split("code=", 1)
             # List as a 2-tuple so that inline-snapshot formats them nicely in pairs
             formatted.append((preamble.strip(), code_block.strip()))
         return formatted
