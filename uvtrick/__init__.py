@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import inspect
-import os
 import pickle
 import subprocess
 import tempfile
@@ -9,8 +8,6 @@ import textwrap
 from collections.abc import Callable
 from pathlib import Path
 
-PICKLED_INPUTS_PATH = "pickled_inputs.pickle"
-PICKLED_OUTPUTS_PATH = "tmp.pickle"
 
 def argskwargs_to_callstring(func, *args, **kwargs) -> str:
     string_kwargs = ", ".join([f"{k}={v}" for k, v in kwargs.items()])
@@ -83,15 +80,44 @@ class Env:
         self.requirements = requirements
         self.python = python
         self.debug = debug
+        self.temp_dir: Path = None
 
-    @staticmethod
-    def maincall(func, inputs_path, outputs_path):
+    @property
+    def inputs(self) -> Path:
+        return self.temp_dir / "pickled_inputs.pickle"
+
+    @property
+    def script(self) -> Path:
+        return self.temp_dir / "pytemp.py"
+
+    @property
+    def output(self) -> Path:
+        return self.temp_dir / "tmp.pickle"
+
+    @property
+    def cmd(self) -> list[str]:
+        quiet = [] if self.debug else ["--quiet"]
+        deps = [f"--with={dep}" for dep in self.requirements]
+        pyversion = [f"--python={self.python}"] if self.python else []
+        return ["uv", "run", *quiet, *deps, *pyversion, str(self.script)]
+
+    def report(self, contents: str) -> None:
+        """Log the temporary dir, input kw/args and intermediate script to STDOUT."""
+        print(f"Running files in {self.temp_dir}\n{self.cmd}")
+        args, kwargs = pickle.loads(self.inputs)
+        print(f"Pickled args: {args}")
+        print(f"Pickled kwargs: {kwargs}")
+        print(f"Contents of the script:\n\n{contents}")
+        return
+
+    def maincall(self, func: Callable) -> str:
         """A main block to deserialise a function signature then serialise a result.
 
         Load the args/kwargs from an 'inputs' pickle, call a Python function
         with them, and store the result in an 'output' pickle.
         """
         func_name = func.__name__
+        inputs_path, output_path = self.inputs, self.output
         return textwrap.dedent(f"""
         if __name__ == "__main__":
             import pickle
@@ -99,39 +125,22 @@ class Env:
 
             args, kwargs = pickle.loads(Path('{inputs_path!s}').read_bytes())
             result = {func_name}(*args, **kwargs)
-            Path('{outputs_path!s}').write_bytes(pickle.dumps(result))
+            Path('{output_path!s}').write_bytes(pickle.dumps(result))
         """)
 
     def run(self, func: Callable, *args, **kwargs):
         """Run a function in the virtual environment using uv."""
-        
         with tempfile.TemporaryDirectory() as temp_dir:
-            temp_dir = Path(temp_dir)
-            inputs = temp_dir / "pickled_inputs.pickle"
-            script = temp_dir / "pytemp.py"
-            output = temp_dir / "tmp.pickle"
+            self.temp_dir = Path(temp_dir)
             # First pickle the inputs
-            inputs.write_bytes(pickle.dumps((args, kwargs)))
-
+            self.inputs.write_bytes(pickle.dumps((args, kwargs)))
             # Now write the contents of the script
-            contents = textwrap.dedent(inspect.getsource(func))
-            contents += "\n\n"
-            contents += self.maincall(func, temp_dir / PICKLED_INPUTS_PATH, temp_dir / PICKLED_OUTPUTS_PATH)
-            script.write_text(contents)
-            
-            quiet = [] if self.debug else ["--quiet"]
-            deps = [f"--with={dep}" for dep in self.requirements]
-            pyversion = [f"--python={self.python}"] if self.python else []
-            cmd = ["uv", "run", *quiet, *deps, *pyversion, str(script)]
+            func_source = textwrap.dedent(inspect.getsource(func))
+            contents = func_source + "\n\n" + self.maincall(func)
+            self.script.write_text(contents)
 
             if self.debug:
-                print(f"Running files in {temp_dir}\n{cmd}")
-                with open(temp_dir / PICKLED_INPUTS_PATH, 'rb') as file:
-                    args, kwargs = pickle.load(file)
-                print(f"Pickled args: {args}")
-                print(f"Pickled kwargs: {kwargs}")
-                print(f"Contents of the script:\n\n {contents}")
-
-            subprocess.run(cmd, cwd=temp_dir, check=True)
-
-            return pickle.loads(output.read_bytes())
+                self.report(contents)
+            subprocess.run(self.cmd, cwd=temp_dir, check=True)
+            # Lastly load the stored result of running the script
+            return pickle.loads(self.output.read_bytes())
