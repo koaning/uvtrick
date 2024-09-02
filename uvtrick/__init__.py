@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import inspect
-import os
 import pickle
 import subprocess
 import tempfile
