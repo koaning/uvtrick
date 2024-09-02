@@ -1,6 +1,7 @@
 
 import rich
 
+
 def hello():
     rich.print("Hello, World!")
     return 1
