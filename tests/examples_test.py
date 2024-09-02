@@ -1,11 +1,11 @@
 from pathlib import Path
 
-test_assets_dir = Path(__file__).parent / "assets"
+test_assets_dir = Path(__file__).parent
 
 def test_add():
     from uvtrick import load
 
-    script = test_assets_dir / "rich_script.py"
+    script = test_assets_dir / "rich-script.py"
     add = load(script, "add")
 
     print(f"{add(1, 2)=}")
@@ -15,7 +15,7 @@ def test_add():
 def test_hello():
     from uvtrick import load
 
-    script = test_assets_dir / "rich_script.py"
+    script = test_assets_dir / "rich-script.py"
     hello = load(script, "hello")
     print(f"{hello()=}")
 
