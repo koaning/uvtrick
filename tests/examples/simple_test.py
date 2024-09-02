@@ -10,27 +10,25 @@ def test_simple(capsys):
     )
     assert fmt_output(captured.err) == snapshot(
         [
-            """\
-        script:
-        file='some_script.py'
-        func='add'\
+            (
+                "file='some_script.py', func='add'",
+                """\
+```
+# /// script
+# dependencies = [
+# ]
+# ///
+
+
+def add(a: int, b: int):
+    return a + b
+
+if __name__ == "__main__":
+    import pickle
+    with open('tmp.pickle', 'wb') as f:
+        pickle.dump(add(1, 2,  ), f)
+```\
 """,
-            """\
-        ```
-        # /// script
-        # dependencies = [
-        # ]
-        # ///
-
-
-        def add(a: int, b: int):
-            return a + b
-
-        if __name__ == "__main__":
-            import pickle
-            with open('tmp.pickle', 'wb') as f:
-                pickle.dump(add(1, 2,  ), f)
-        ```\
-""",
+            )
         ],
     )

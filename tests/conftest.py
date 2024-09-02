@@ -9,13 +9,18 @@ sys.path.append(str(root_dir))
 
 
 def fmt_output(text: str) -> list[str]:
-    """Provide a utility function for formatting output."""
+    """Utility function for formatting subprocess output."""
     if "```" in text:
         # Logged script code: indent multi-line paragraphs (code blocks)
-        return [
-            indent(section, prefix=" " * 8).strip("\n")
-            for section in text.split("code=")
-        ]
+        # Use the 'script:\n' tag as a separator for individual scripts in the log
+        formatted = []
+        scripts = list(filter(None, text.split("script:\n")))
+        # Use the 'code=' tag as a separator for the code block of a script in the log
+        for script in scripts:
+            preamble, code = script.strip("\n").strip().split("code=", 1)
+            # List as a 2-tuple so that inline-snapshot formats them nicely in pairs
+            formatted.append((preamble.strip(), code_block.strip()))
+        return formatted
     else:
         # Actual program output
         return text.splitlines()

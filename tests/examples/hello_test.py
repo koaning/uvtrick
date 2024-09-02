@@ -8,34 +8,32 @@ def test_hello(capsys):
     assert fmt_output(captured.out) == snapshot(["hello()=1"])
     assert fmt_output(captured.err) == snapshot(
         [
-            """\
-        script:
-        file='rich_script.py'
-        func='hello'\
+            (
+                "file='rich_script.py', func='hello'",
+                """\
+```
+# /// script
+# dependencies = [
+#   "rich",
+# ]
+# ///
+import rich
+
+
+def hello():
+    rich.print("Hello, World!")
+    return 1
+
+
+def add(a, b):
+    return a + b
+
+if __name__ == "__main__":
+    import pickle
+    with open('tmp.pickle', 'wb') as f:
+        pickle.dump(hello( ), f)
+```\
 """,
-            """\
-        ```
-        # /// script
-        # dependencies = [
-        #   "rich",
-        # ]
-        # ///
-        import rich
-
-
-        def hello():
-            rich.print("Hello, World!")
-            return 1
-
-
-        def add(a, b):
-            return a + b
-
-        if __name__ == "__main__":
-            import pickle
-            with open('tmp.pickle', 'wb') as f:
-                pickle.dump(hello( ), f)
-        ```\
-""",
+            )
         ],
     )
