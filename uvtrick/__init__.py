@@ -4,6 +4,7 @@ import inspect
 import os
 import pickle
 import subprocess
+import sys
 import tempfile
 import textwrap
 from collections.abc import Callable
@@ -53,7 +54,10 @@ def uvtrick_(path, func, *args, **kwargs):
         pickle.dump({func}({string_args} {string_kwargs}), f)\n"""
 
         Path(temp_dir / "pytemp.py").write_text(code)
-        # print(code)
+        if "pytest" in sys.modules:
+            file = Path(path).name
+            logged_code = f"script:\n{file=}\n{func=}\ncode=```\n{code}```"
+            print(logged_code, file=sys.stderr)
         subprocess.run(f"uv run --quiet {str(temp_dir / 'pytemp.py')}", shell=True, cwd=temp_dir)
 
         temp_pickle_path = os.path.join(temp_dir, "tmp.pickle")
