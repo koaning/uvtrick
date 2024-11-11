@@ -14,7 +14,7 @@ dependencies = [
 description = "A fun party trick to run Python code from another venv into this one."
 license = {text = "MIT"}
 name = "uvtrick"
-version = "0.3.0"
+version = "0.4.0"
 readme = "README.md"
 requires-python = ">=3.8"
 
