@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-import pickle
+import cloudpickle
 import subprocess
 import tempfile
 import textwrap
@@ -36,16 +36,16 @@ def uvtrick_(path: str | Path, func: Callable, *args, **kwargs):
             raise ValueError("Script metadata/dependencies not found in the file")
 
         code += f"""if __name__ == "__main__":
-    import pickle
+    import cloudpickle
     with open('tmp.pickle', 'wb') as f:
-        pickle.dump({func}({string_args} {string_kwargs}), f)\n"""
+        cloudpickle.dump({func}({string_args} {string_kwargs}), f)\n"""
 
         script.write_text(code)
         # print(code)
-        cmd = ["uv", "run", "--quiet", str(script)]
+        cmd = ["uv", "run", "--with=cloudpickle", "--quiet", str(script)]
         subprocess.run(cmd, cwd=temp_dir, check=True)
 
-        return pickle.loads(output.read_bytes())
+        return cloudpickle.loads(output.read_bytes())
 
 
 def load(path: str | Path, func: Callable) -> Callable:
@@ -64,7 +64,7 @@ def load(path: str | Path, func: Callable) -> Callable:
     from uvtrick import load
 
     # Load the function `hello` from the file `some_script.py`
-    # It runs in another virtualenv, but you get back the response via pickle. 
+    # It runs in another virtualenv, but you get back the response via cloudpickle. 
     # Be aware of the limitations, please only consider base Python objects.
     hello = load("some_script.py", "hello")
     ```
@@ -99,12 +99,12 @@ class Env:
         quiet = [] if self.debug else ["--quiet"]
         deps = [f"--with={dep}" for dep in self.requirements]
         pyversion = [f"--python={self.python}"] if self.python else []
-        return ["uv", "run", *quiet, *deps, *pyversion, str(self.script)]
+        return ["uv", "run", "--with=cloudpickle", *quiet, *deps, *pyversion, str(self.script)]
 
     def report(self, contents: str) -> None:
         """Log the temporary dir, input kw/args and intermediate script to STDOUT."""
         print(f"Running files in {self.temp_dir}\n{self.cmd}")
-        args, kwargs = pickle.loads(self.inputs)
+        args, kwargs = cloudpickle.loads(self.inputs)
         print(f"Pickled args: {args}")
         print(f"Pickled kwargs: {kwargs}")
         print(f"Contents of the script:\n\n{contents}")
@@ -113,19 +113,19 @@ class Env:
     def maincall(self, func: Callable) -> str:
         """A main block to deserialise a function signature then serialise a result.
 
-        Load the args/kwargs from an 'inputs' pickle, call a Python function
-        with them, and store the result in an 'output' pickle.
+        Load the args/kwargs from an 'inputs' cloudpickle, call a Python function
+        with them, and store the result in an 'output' cloudpickle.
         """
         func_name = func.__name__
         inputs_path, output_path = self.inputs, self.output
         return textwrap.dedent(f"""
         if __name__ == "__main__":
-            import pickle
+            import cloudpickle
             from pathlib import Path
 
-            args, kwargs = pickle.loads(Path('{inputs_path!s}').read_bytes())
+            args, kwargs = cloudpickle.loads(Path('{inputs_path!s}').read_bytes())
             result = {func_name}(*args, **kwargs)
-            Path('{output_path!s}').write_bytes(pickle.dumps(result))
+            Path('{output_path!s}').write_bytes(cloudpickle.dumps(result))
         """)
 
     def run(self, func: Callable, *args, **kwargs):
@@ -133,7 +133,7 @@ class Env:
         with tempfile.TemporaryDirectory() as temp_dir:
             self.temp_dir = Path(temp_dir)
             # First pickle the inputs
-            self.inputs.write_bytes(pickle.dumps((args, kwargs)))
+            self.inputs.write_bytes(cloudpickle.dumps((args, kwargs)))
             # Now write the contents of the script
             func_source = textwrap.dedent(inspect.getsource(func))
             contents = func_source + "\n\n" + self.maincall(func)
@@ -143,4 +143,4 @@ class Env:
                 self.report(contents)
             subprocess.run(self.cmd, cwd=temp_dir, check=True)
             # Lastly load the stored result of running the script
-            return pickle.loads(self.output.read_bytes())
+            return cloudpickle.loads(self.output.read_bytes())
