@@ -7,7 +7,7 @@ classifiers = [
   "License :: OSI Approved :: MIT License"
 ]
 dependencies = [
-  "cloudpickle>=3.1.0",
+  "cloudpickle>=2.0.0",
   "uv",
 ]
 description = "A fun party trick to run Python code from another venv into this one."
