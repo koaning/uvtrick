@@ -23,7 +23,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
     - name: Install Base Dependencies
-      run: python -m pip install -e . scikit-learn altair
+      run: python -m pip install -e . scikit-learn altair polars
     - name: Demo
       run: python demo.py
     - name: Install Pytest
