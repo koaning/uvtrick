@@ -13,7 +13,7 @@ dependencies = [
 description = "A fun party trick to run Python code from another venv into this one."
 license = {text = "MIT"}
 name = "uvtrick"
-version = "0.4.0"
+version = "0.4.2"
 readme = "README.md"
 requires-python = ">=3.8"
 
@@ -30,3 +30,7 @@ test = [
 dev-dependencies = [
   "pytest>=8.3.2"
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
