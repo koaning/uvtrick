@@ -1,6 +1,9 @@
 import random
 from uvtrick import Env 
+import pickle 
+import cloudpickle
 
+cloudpickle.PICKLE_PROTOCOL = pickle.DEFAULT_PROTOCOL
 
 def bench():
     from sklearn.datasets import make_regression
@@ -22,7 +25,7 @@ def combiner(pairs, times=4):
     return combos
 
 combos = combiner(
-    pairs=[("0.22", "3.7"), ("0.23", "3.7"), ("0.24", "3.7"), ("1.4", "3.9"), ("1.5", "3.9")], 
+    pairs=[("1.4", "3.9"), ("1.5", "3.9")], 
     times=10
 )
 
