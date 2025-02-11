@@ -94,7 +94,7 @@ class Env:
         self.temp_dir: Path = None
         self.env = env
 
-        if env and "path" not in env:
+        if env and "PATH" not in env:
             warnings.warn("The PATH environment variable is not set in `env`, this may cause issues when running the script. Try using env=os.environ.copy() to copy the current environment first.")
 
     @property
