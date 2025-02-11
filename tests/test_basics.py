@@ -1,5 +1,6 @@
 """When I hacks this bad, I write tests."""
 
+import os
 import pytest
 
 from uvtrick import Env, load
@@ -56,3 +57,21 @@ def test_env_works2():
             "dictionary": {"a": 1, "b": 2},
             "string": "hello",
         }
+
+def test_env_environment_variables():
+    def handles_all_types(arr, dictionary, string):
+        import os
+        assert os.environ.get("TEST_ENV_VAR") == "hello"
+        return os.environ.get("TEST_ENV_VAR")
+
+    env = os.environ.copy()
+    env["TEST_ENV_VAR"] = "hello"
+    out = Env(env=env).run(
+        handles_all_types,
+        arr=[1, 2, 3],
+        dictionary={"a": 1, "b": 2},
+        string="hello",
+    )
+    assert out == "hello"
+
+    # f"rich==13", 

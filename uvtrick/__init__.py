@@ -7,6 +7,7 @@ import tempfile
 import textwrap
 from collections.abc import Callable
 from pathlib import Path
+import warnings
 
 
 def argskwargs_to_callstring(func, *args, **kwargs) -> str:
@@ -75,12 +76,22 @@ def load(path: str | Path, func: Callable) -> Callable:
 
 
 class Env:
-    """Represents a virtual environment with a specific Python version and set of dependencies."""
-    def __init__(self, *requirements: str, python: str = None, debug: bool = False):
+    """
+    Represents a virtual environment with a specific Python version and set of dependencies.
+    
+    Args:
+        *requirements: A list of dependencies to install in the virtual environment.
+        python (str): The Python version to use in the virtual environment.
+        debug (bool): If True, the script contents will be printed to STDOUT.
+        temp_dir (Path): The temporary directory where the script and pickled inputs/outputs are stored.
+        env (dict): A dictionary of environment variables to set when running the script.
+    """
+    def __init__(self, *requirements: str, python: str = None, debug: bool = False, env: dict[str, str] | None = None):
         self.requirements = requirements
         self.python = python
         self.debug = debug
         self.temp_dir: Path = None
+        self.env = env
 
     @property
     def inputs(self) -> Path:
@@ -99,7 +110,7 @@ class Env:
         quiet = [] if self.debug else ["--quiet"]
         deps = [f"--with={dep}" for dep in self.requirements]
         pyversion = [f"--python={self.python}"] if self.python else []
-        return ["uv", "run", "--with=cloudpickle", *quiet, *deps, *pyversion, str(self.script)]
+        return ["uv", "run","--with=cloudpickle", *quiet, *deps, *pyversion, str(self.script)]
 
     def report(self, contents: str) -> None:
         """Log the temporary dir, input kw/args and intermediate script to STDOUT."""
@@ -122,8 +133,12 @@ class Env:
         if __name__ == "__main__":
             import cloudpickle
             from pathlib import Path
+            import os
+            
+            args, kwargs, environment_variables = cloudpickle.loads(Path('{inputs_path!s}').read_bytes())
+            if environment_variables:
+                os.environ.update(environment_variables)
 
-            args, kwargs = cloudpickle.loads(Path('{inputs_path!s}').read_bytes())
             result = {func_name}(*args, **kwargs)
             Path('{output_path!s}').write_bytes(cloudpickle.dumps(result))
         """)
@@ -132,8 +147,8 @@ class Env:
         """Run a function in the virtual environment using uv."""
         with tempfile.TemporaryDirectory() as temp_dir:
             self.temp_dir = Path(temp_dir)
-            # First pickle the inputs
-            self.inputs.write_bytes(cloudpickle.dumps((args, kwargs)))
+            # First pickle the inputs and environment variables
+            self.inputs.write_bytes(cloudpickle.dumps((args, kwargs, self.env)))
             # Now write the contents of the script
             func_source = textwrap.dedent(inspect.getsource(func))
             contents = func_source + "\n\n" + self.maincall(func)
