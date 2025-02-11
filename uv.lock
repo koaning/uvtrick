@@ -108,8 +108,8 @@ wheels = [
 
 [[package]]
 name = "uvtrick"
-version = "0.3.0"
-source = { virtual = "." }
+version = "0.4.2"
+source = { editable = "." }
 dependencies = [
     { name = "cloudpickle" },
     { name = "uv" },
@@ -122,7 +122,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "cloudpickle", specifier = ">=3.1.0" },
+    { name = "cloudpickle", specifier = ">=2.0.0" },
     { name = "uv" },
 ]
 

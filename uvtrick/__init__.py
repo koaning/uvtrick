@@ -7,6 +7,7 @@ import tempfile
 import textwrap
 from collections.abc import Callable
 from pathlib import Path
+import warnings
 
 
 def argskwargs_to_callstring(func, *args, **kwargs) -> str:
@@ -75,12 +76,26 @@ def load(path: str | Path, func: Callable) -> Callable:
 
 
 class Env:
-    """Represents a virtual environment with a specific Python version and set of dependencies."""
-    def __init__(self, *requirements: str, python: str = None, debug: bool = False):
+    """
+    Represents a virtual environment with a specific Python version and set of dependencies.
+    
+    Args:
+        *requirements: A list of dependencies to install in the virtual environment.
+        python (str): The Python version to use in the virtual environment.
+        debug (bool): If True, the script contents will be printed to STDOUT.
+        temp_dir (Path): The temporary directory where the script and pickled inputs/outputs are stored.
+        env (dict): A dictionary of environment variables to use when running the script.
+            This should reflect the full environment, including the path.
+    """
+    def __init__(self, *requirements: str, python: str = None, debug: bool = False, env: dict[str, str] | None = None):
         self.requirements = requirements
         self.python = python
         self.debug = debug
         self.temp_dir: Path = None
+        self.env = env
+
+        if env and "path" not in env:
+            warnings.warn("The PATH environment variable is not set in `env`, this may cause issues when running the script. Try using env=os.environ.copy() to copy the current environment first.")
 
     @property
     def inputs(self) -> Path:
@@ -141,6 +156,6 @@ class Env:
 
             if self.debug:
                 self.report(contents)
-            subprocess.run(self.cmd, cwd=temp_dir, check=True)
+            subprocess.run(self.cmd, cwd=temp_dir, check=True, env=self.env)
             # Lastly load the stored result of running the script
             return cloudpickle.loads(self.output.read_bytes())
