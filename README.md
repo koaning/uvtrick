@@ -76,5 +76,9 @@ Be aware that a lot of pickling is happening under the hood here. This can be a 
 or if your function is returning an object that needs a dependency that is not installed in the environment that is calling `Env`. 
 
 Also note that thusfar this entire project is merely the result of a very entertaining recreational programming session. 
-We might want to gather some community feedback before suggesting production usage. To quote [Simon Willison](https://simonwillison.net/search/?q=uv+vincent): "This "fun party trick" by Vincent D. Warmerdam is absolutely brilliant and a little horrifying."
+We might want to gather some community feedback before suggesting production usage. 
+
+To quote [Simon Willison](https://simonwillison.net/search/?q=uv+vincent): 
+
+> "This "fun party trick" by Vincent D. Warmerdam is absolutely brilliant and a little horrifying."
 
